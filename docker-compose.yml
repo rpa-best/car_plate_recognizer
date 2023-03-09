@@ -1,0 +1,7 @@
+version: '3.3'
+
+services:
+  car_plate:
+    build: .
+    volumes:
+      - .:/app/

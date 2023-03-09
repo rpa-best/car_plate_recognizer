@@ -12,6 +12,6 @@ RUN pip3 install opencv-python
 COPY . /app
 WORKDIR /app
 
-RUN pip install imutils pandas
+RUN pip install imutils pandas matplotlib
 
 CMD ["python", "test.py"]
