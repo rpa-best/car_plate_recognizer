@@ -1,17 +1,10 @@
 FROM python:3.9
 
-RUN apt-get update \
-  && apt-get -y install tesseract-ocr \
-  && apt-get install -y python3 python3-distutils python3-pip 
-
-RUN apt update \
-  && apt-get install ffmpeg libsm6 libxext6 -y
-RUN pip3 install pytesseract
-RUN pip3 install opencv-python
+RUN apt-get update && apt-get -y install tesseract-ocr ffmpeg libsm6 libxext6 tesseract-ocr-rus -y
 
 COPY . /app
 WORKDIR /app
 
-RUN pip install imutils pandas matplotlib
+RUN pip install -r requirements.txt
 
-CMD ["python", "test.py"]
+CMD ["python", "main.py"]
