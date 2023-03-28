@@ -1,7 +1,7 @@
 [
     {
         "id": 1,
-        "plate_response_url": "http://localhost:9000/api/response-plate/",
+        "plate_response_url": "http://username:password@localhost:9000/api/response-plate/",
         "ip": "rtsp://username:password@127.0.0.1:8000/1"
     }
 ]

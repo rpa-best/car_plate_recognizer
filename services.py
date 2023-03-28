@@ -1,11 +1,8 @@
-import os
 import uuid
 import requests
 
 class CarControlService:
-    header = {
-        'Authorization': ' '.join(['Basic ', os.getenv('CAR_CONTROL_BASIC_AUTHORIZATION')])
-    }
+    header = {}
 
     def plate_response(self, plate: str, camera_params: dict):
         camera_params.update(plate=plate)
