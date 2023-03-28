@@ -1,10 +1,11 @@
 import time
+import re
 import cv2
 import numpy as np
 import pytesseract
 from threading import Thread
 
-from services import InviteService, CarControlService
+from services import CarControlService
 
 
 class VideoCamera:
@@ -38,11 +39,10 @@ class VideoCamera:
         result = pytesseract.image_to_string(
             carplate_extract_img_gray_blur, lang='rus',
             config = f'--psm 8 --oem 3')
-        return ''.join([r for r in result.replace('\n', '')])
-
-    def _check_plate(self, plate: str) -> bool:
-        service = InviteService()
-        return service.check_invite(plate, self.params)
+        regexp = r"\w{1}\d{3}\w{2}\d{2,3}"
+        result = ''.join([r for r in result.replace('\n', '')])
+        if re.match(regexp, result):
+            return result
 
     def _send_response(self, plate: str):
         CarControlService().plate_response(plate, self.params)
@@ -52,9 +52,11 @@ class VideoCamera:
             time.sleep(1)
             ret, frame = self.video.read()
             if ret:
-                plate = self._recognize(frame)
-
-                if self._check_plate(plate):
-                    self._send_response(plate)
+                try:
+                    plate = self._recognize(frame)
+                    if plate:
+                        self._send_response(plate)
+                except Exception as _exp:
+                    print(_exp)
             else:
                 print('Camera not read a frame')

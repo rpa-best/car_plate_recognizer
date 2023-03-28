@@ -1,4 +1,6 @@
+import os
 import json
+from dotenv import load_dotenv
 from camera import VideoCamera
 
 
@@ -11,4 +13,6 @@ def main():
 
 
 if __name__ == '__main__':
+    if os.path.exists(".env"):
+        load_dotenv()
     main()

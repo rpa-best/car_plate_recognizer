@@ -1,11 +1,7 @@
 [
     {
         "id": 1,
-        "local_web_host": "http://localhost:8000",
-        "web_host": "https://karer.keyman24.ru",
         "plate_response_url": "http://localhost:9000/api/response-plate/",
-        "ip": 0,
-        "karer": "karer_1",
-        "mode": "import"
+        "ip": "rtsp://username:password@127.0.0.1:8000/1"
     }
 ]
