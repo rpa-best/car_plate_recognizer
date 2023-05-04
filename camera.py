@@ -40,10 +40,11 @@ class VideoCamera:
             result = pytesseract.image_to_string(
                 carplate_extract_img_gray_blur, lang='rus',
                 config = f'--psm 8 --oem 3')
-            regexp = r"\w{1}\d{3}\w{2}\d{2,3}"
-            result = ''.join([r for r in result.replace('\n', '')])
-            if re.match(regexp, result):
-                return result
+            return result
+            # regexp = r"\w{1}\d{3}\w{2}\d{2,3}"
+            # result = ''.join([r for r in result.replace('\n', '')])
+            # if re.match(regexp, result):
+            #     return result
 
     def _send_response(self, plate: str):
         print(f"Plate: {plate}")
