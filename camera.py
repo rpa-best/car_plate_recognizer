@@ -17,7 +17,7 @@ class VideoCamera:
 
     def _carplate_extract(self, image):
         carplate_rects = self.carplate_haar_cascade.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5) 
-        carplate_img = np.array()
+        carplate_img = None
         for x,y,w,h in carplate_rects: 
             carplate_img = image[y+15:y+h-10 ,x+15:x+w-20] 
         return carplate_img
@@ -32,17 +32,18 @@ class VideoCamera:
     
     def _recognize(self, frame) -> str:
         carplate_extract_img = self._carplate_extract(frame)
-        carplate_extract_img = self._enlarge_img(carplate_extract_img, 150)
-        carplate_extract_img_gray = cv2.cvtColor(carplate_extract_img, cv2.COLOR_RGB2GRAY)
-        carplate_extract_img_gray_blur = cv2.medianBlur(carplate_extract_img_gray,3) # Kernel size 3
+        if carplate_extract_img:
+            carplate_extract_img = self._enlarge_img(carplate_extract_img, 150)
+            carplate_extract_img_gray = cv2.cvtColor(carplate_extract_img, cv2.COLOR_RGB2GRAY)
+            carplate_extract_img_gray_blur = cv2.medianBlur(carplate_extract_img_gray,3) # Kernel size 3
 
-        result = pytesseract.image_to_string(
-            carplate_extract_img_gray_blur, lang='rus',
-            config = f'--psm 8 --oem 3')
-        regexp = r"\w{1}\d{3}\w{2}\d{2,3}"
-        result = ''.join([r for r in result.replace('\n', '')])
-        if re.match(regexp, result):
-            return result
+            result = pytesseract.image_to_string(
+                carplate_extract_img_gray_blur, lang='rus',
+                config = f'--psm 8 --oem 3')
+            regexp = r"\w{1}\d{3}\w{2}\d{2,3}"
+            result = ''.join([r for r in result.replace('\n', '')])
+            if re.match(regexp, result):
+                return result
 
     def _send_response(self, plate: str):
         CarControlService().plate_response(plate, self.params)
