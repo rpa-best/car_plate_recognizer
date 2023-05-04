@@ -46,6 +46,7 @@ class VideoCamera:
                 return result
 
     def _send_response(self, plate: str):
+        print(f"Plate: {plate}")
         CarControlService().plate_response(plate, self.params)
 
     def run(self):
