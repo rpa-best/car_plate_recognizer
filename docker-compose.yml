@@ -2,8 +2,7 @@ version: '3.3'
 
 services:
   car_plate:
+    container_name: car_plate
     build: .
     volumes:
       - .:/app/
-    env_file:
-      - ./.env

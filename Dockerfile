@@ -1,6 +1,6 @@
 FROM python:3.9
 
-RUN apt-get update && apt-get -y install tesseract-ocr ffmpeg libsm6 libxext6 tesseract-ocr-rus -y
+RUN apt-get update && apt-get -y install ffmpeg libsm6 libxext6 -y
 
 COPY . /app
 WORKDIR /app

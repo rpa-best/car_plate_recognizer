@@ -1,48 +1,69 @@
 import time
-import re
+import imutils
 import cv2
 import numpy as np
-import pytesseract
+import easyocr
 from threading import Thread
 
 from services import CarControlService
 
+reader = easyocr.Reader(["ru"])
 
 class VideoCamera:
     def __init__(self, params: dict) -> None:
-        self.video = cv2.VideoCapture(params.get('ip'))
         self.params = params
-        self.carplate_haar_cascade = cv2.CascadeClassifier('plate.xml')
-        Thread(target=self.run).start()
-
-    def _carplate_extract(self, image):
-        carplate_rects = self.carplate_haar_cascade.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5) 
-        carplate_img = np.array()
-        for x,y,w,h in carplate_rects: 
-            carplate_img = image[y+15:y+h-10 ,x+15:x+w-20] 
-        return carplate_img
-    
-    
-    def _enlarge_img(image, scale_percent):
-        width = int(image.shape[1] * scale_percent / 100)
-        height = int(image.shape[0] * scale_percent / 100)
-        dim = (width, height)
-        resized_image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
-        return resized_image
+        self.carplate_haar_cascade = cv2.CascadeClassifier('./haarcascades/mallick_haarcascade_russian_plate_number.xml')
+        if params.get('ip'):
+            self.video = cv2.VideoCapture(params.get('ip'))
+            Thread(target=self.run).start()
     
     def _recognize(self, frame) -> str:
-        carplate_extract_img = self._carplate_extract(frame)
-        carplate_extract_img = self._enlarge_img(carplate_extract_img, 150)
-        carplate_extract_img_gray = cv2.cvtColor(carplate_extract_img, cv2.COLOR_RGB2GRAY)
-        carplate_extract_img_gray_blur = cv2.medianBlur(carplate_extract_img_gray,3) # Kernel size 3
+        img = cv2.resize(frame, (600,400) )
 
-        result = pytesseract.image_to_string(
-            carplate_extract_img_gray_blur, lang='rus',
-            config = f'--psm 8 --oem 3')
-        regexp = r"\w{1}\d{3}\w{2}\d{2,3}"
-        result = ''.join([r for r in result.replace('\n', '')])
-        if re.match(regexp, result):
-            return result
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
+        gray = cv2.bilateralFilter(gray, 13, 15, 15) 
+
+        edged = cv2.Canny(gray, 30, 200) 
+        contours = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        contours = imutils.grab_contours(contours)
+        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
+        screenCnt = None
+
+        for c in contours:
+            
+            peri = cv2.arcLength(c, True)
+            approx = cv2.approxPolyDP(c, 0.018 * peri, True)
+        
+            if len(approx) == 4:
+                screenCnt = approx
+                break
+
+        if screenCnt is None:
+            detected = 0
+            print ("No contour detected")
+        else:
+            detected = 1
+
+        if detected == 1:
+            cv2.drawContours(img, [screenCnt], -1, (0, 0, 255), 3)
+
+            mask = np.zeros(gray.shape,np.uint8)
+            cv2.drawContours(mask,[screenCnt],0,255,-1,)
+            cv2.bitwise_and(img,img,mask=mask)
+
+            (x, y) = np.where(mask == 255)
+            (topx, topy) = (np.min(x), np.min(y))
+            (bottomx, bottomy) = (np.max(x), np.max(y))
+            Cropped = gray[topx:bottomx+1, topy:bottomy+1]
+            test = reader.recognize(Cropped, decoder="beamsearch", allowlist="1234567890АВЕКМНОРСТУХ", detail=0, batch_size=5, )
+            test = "".join(test)
+            print("programming_fever's License Plate Recognition\n")
+            print("Detected license plate Number is:", test)
+            img = cv2.resize(img,(500,300))
+            Cropped = cv2.resize(Cropped,(400,200))
+            return test
+        else:
+            print("Plate not found")
 
     def _send_response(self, plate: str):
         CarControlService().plate_response(plate, self.params)

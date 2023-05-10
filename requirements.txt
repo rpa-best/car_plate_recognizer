@@ -1,6 +1,6 @@
 imutils 
 pandas
 opencv-python
-pytesseract
 requests
 python-dotenv
+easyocr

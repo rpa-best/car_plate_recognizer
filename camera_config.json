@@ -2,8 +2,8 @@
     {
         "id": 1,
         "plate_response_url": "http://username:password@localhost:9000/api/response-plate/",
-        "ip": "rtsp://username:password@127.0.0.1:8000/1",
-        "mode" : "import", //import export
+        "ip": "rtsp://admin:video123@192.168.1.111:554/cam/realmonitor?channel=1&subtype=1",
+        "mode" : "import",
         "plate" : "1234"
     }
 ]
