@@ -1,0 +1,71 @@
+ffmpeg:
+  camera:
+    camera_1:
+      name: Camera 1
+      host: 192.168.1.111
+      path: /cam/realmonitor?channel=1&subtype=1
+      username: admin
+      password: video123
+      port: 554
+      stream_format: mjpeg
+      fps: 24
+      recorder:
+        idle_timeout: 1
+        codec: h264
+
+mog2:
+  motion_detector:
+    cameras:
+      viseron_camera:
+        fps: 1
+      viseron_camera2:
+        fps: 1
+
+background_subtractor:
+  motion_detector:
+    cameras:
+      viseron_camera3:
+        fps: 1
+        mask:
+          - coordinates:
+              - x: 400
+                y: 200
+              - x: 1000
+                y: 200
+              - x: 1000
+                y: 750
+              - x: 400
+                y: 750
+
+darknet:
+  object_detector:
+    cameras:
+      viseron_camera:
+        fps: 1
+        scan_on_motion_only: false
+        labels:
+          - label: person
+            confidence: 0.8
+            trigger_recorder: true
+      viseron_camera2:
+        fps: 1
+        labels:
+          - label: person
+            confidence: 0.8
+            trigger_recorder: true
+      viseron_camera3:
+        fps: 1
+        labels:
+          - label: person
+            confidence: 0.8
+            trigger_recorder: true
+
+nvr:
+  viseron_camera:
+  viseron_camera2:
+  viseron_camera3:
+
+webserver:
+
+logger:
+  default_level: debug

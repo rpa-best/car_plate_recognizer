@@ -1,9 +1,0 @@
-[
-    {
-        "id": 1,
-        "plate_response_url": "http://username:password@localhost:9000/api/response-plate/",
-        "ip": "rtsp://username:password@127.0.0.1:8000/1",
-        "mode" : "import", //import export
-        "plate" : "1234"
-    }
-]
