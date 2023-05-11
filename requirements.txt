@@ -1,4 +1,4 @@
-imutils
+imutils==0.5.4
 pandas
 opencv-contrib-python==4.7.0.72
 opencv-python==4.5.5.64
