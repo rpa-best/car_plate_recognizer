@@ -1,6 +1,5 @@
 import time
-import imutils
-import cv2.cv2 as cv2
+import cv2
 import numpy as np
 import easyocr
 from threading import Thread
@@ -18,6 +17,8 @@ class VideoCamera:
             Thread(target=self.run).start()
     
     def _recognize(self, frame) -> str:
+        import imutils
+        
         img = cv2.resize(frame, (600,400) )
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
