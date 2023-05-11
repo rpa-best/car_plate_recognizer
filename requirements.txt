@@ -1,6 +1,7 @@
-imutils 
+imutils
 pandas
-opencv-python
+opencv-contrib-python==4.7.0.72
+opencv-python==4.5.5.64
 requests
 python-dotenv
 easyocr
