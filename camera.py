@@ -80,7 +80,10 @@ class VideoCamera:
                 try:
                     plate = self._recognize(frame)
                     if plate:
+                        print(plate)
                         self._send_response(plate)
+                    else: 
+                        print('Plate not found')
                 except Exception as _exp:
                     print(_exp)
             else:
