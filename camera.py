@@ -1,77 +1,80 @@
 import time
 import cv2
-import numpy as np
-import easyocr
+import os
+import requests
 from threading import Thread
-
+from PIL import Image
+import base64
+from io import BytesIO
 from services import CarControlService
 
-reader = easyocr.Reader(["ru"])
 
 class VideoCamera:
+    _vision_url = 'https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze'
+
     def __init__(self, params: dict) -> None:
         self.params = params
-        self.carplate_haar_cascade = cv2.CascadeClassifier('./haarcascades/mallick_haarcascade_russian_plate_number.xml')
         if params.get('ip'):
             self.video = cv2.VideoCapture(params.get('ip'))
             Thread(target=self.run).start()
     
     def _recognize(self, frame) -> str:
-        import imutils
-        
-        img = cv2.resize(frame, (600,400) )
+        frame_base64 = self._image_to_base64(frame)
+        result = self.request_to_yandex_api(frame_base64)
+        return self._parse_result(result)
 
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) 
-        gray = cv2.bilateralFilter(gray, 13, 15, 15) 
+    def _parse_result(self, result):
+        plates = []
+        for r in result:
+            for rr in r.get("results", []):
+                for p in rr.get("textDetection", {}).get("pages", []):
+                    for b in p.get("blocks", []):
+                        for l in b.get("lines", []):
+                            for w in l.get("words"):
+                                plates.append(w.get("text"))
+        return plates
 
-        edged = cv2.Canny(gray, 30, 200) 
-        contours = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        contours = imutils.grab_contours(contours)
-        contours = sorted(contours, key = cv2.contourArea, reverse = True)[:10]
-        screenCnt = None
+    def _image_to_base64(self, image):
+        with BytesIO() as buff:
+            pil_img = Image.fromarray(image)
+            pil_img.save(buff, format="PDF")
+            return base64.b64encode(buff.getvalue()).decode("utf-8")
+    
+    def _get_headers(self):
+        return {'Authorization': f'Api-Key {os.getenv("YANDEX_OCR_TOKEN")}'}
+    
+    def _get_body(self, image_as_base64: list, model="license-plates"):
+        feature = {
+            'type': 'TEXT_DETECTION',
+            'textDetectionConfig': {
+                'languageCodes': ["ru"],
+            }
+        }
 
-        for c in contours:
-            
-            peri = cv2.arcLength(c, True)
-            approx = cv2.approxPolyDP(c, 0.018 * peri, True)
-        
-            if len(approx) == 4:
-                screenCnt = approx
-                break
+        if model is not None:
+            feature['textDetectionConfig']['model'] = model
 
-        if screenCnt is None:
-            detected = 0
-            print ("No contour detected")
-        else:
-            detected = 1
+        data = {'analyzeSpecs': [
+            {
+                'content': image_as_base64,
+                "mime_type": 'application/pdf',
+                'features': [feature]
+            }
+        ]}
+        return data
+    
+    def request_to_yandex_api(self, image_as_base64):
+        response = requests.post(self._vision_url, headers=self._get_headers(),
+                                json=self._get_body(image_as_base64))
+        return response.json().get('results', [])
 
-        if detected == 1:
-            cv2.drawContours(img, [screenCnt], -1, (0, 0, 255), 3)
-
-            mask = np.zeros(gray.shape,np.uint8)
-            cv2.drawContours(mask,[screenCnt],0,255,-1,)
-            cv2.bitwise_and(img,img,mask=mask)
-
-            (x, y) = np.where(mask == 255)
-            (topx, topy) = (np.min(x), np.min(y))
-            (bottomx, bottomy) = (np.max(x), np.max(y))
-            Cropped = gray[topx:bottomx+1, topy:bottomy+1]
-            test = reader.recognize(Cropped, decoder="beamsearch", allowlist="1234567890АВЕКМНОРСТУХ", detail=0, batch_size=5, )
-            test = "".join(test)
-            print("programming_fever's License Plate Recognition\n")
-            print("Detected license plate Number is:", test)
-            img = cv2.resize(img,(500,300))
-            Cropped = cv2.resize(Cropped,(400,200))
-            return test
-        else:
-            print("Plate not found")
 
     def _send_response(self, plate: str):
         CarControlService().plate_response(plate, self.params)
 
     def run(self):
         while True:
-            time.sleep(1)
+            time.sleep(3)
             ret, frame = self.video.read()
             if ret:
                 try:

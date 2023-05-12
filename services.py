@@ -4,7 +4,7 @@ import requests
 class CarControlService:
     header = {}
 
-    def plate_response(self, plate: str, camera_params: dict):
+    def plate_response(self, plate: list, camera_params: dict):
         camera_params.update(plate=plate)
         self.header.update({"Idempotency-Key": uuid.uuid4()})
         try:

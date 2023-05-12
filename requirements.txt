@@ -1,7 +1,4 @@
-imutils==0.5.4
-pandas
-opencv-contrib-python==4.6.0.66
-opencv-python==4.5.4.58
+opencv-python
 requests
 python-dotenv
-easyocr
+Pillow
