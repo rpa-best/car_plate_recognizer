@@ -66,6 +66,7 @@ class VideoCamera:
     def request_to_yandex_api(self, image_as_base64):
         response = requests.post(self._vision_url, headers=self._get_headers(),
                                 json=self._get_body(image_as_base64))
+        print(response.json())
         return response.json().get('results', [])
 
 
