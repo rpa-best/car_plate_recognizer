@@ -30,7 +30,7 @@ class VideoCamera:
                 for p in rr.get("textDetection", {}).get("pages", []):
                     for b in p.get("blocks", []):
                         for l in b.get("lines", []):
-                            for w in l.get("words"):
+                            for w in l.get("words", []):
                                 plates.append(w.get("text"))
         return plates
 
@@ -70,21 +70,21 @@ class VideoCamera:
 
 
     def _send_response(self, plate: str):
-        CarControlService().plate_response(plate, self.params)
+        try:
+            CarControlService().plate_response(plate, self.params)
+        except Exception as _exp:
+            print(f"Plate not sended: {_exp}")
 
     def run(self):
         while True:
             time.sleep(3)
             ret, frame = self.video.read()
             if ret:
-                try:
-                    plate = self._recognize(frame)
-                    if plate:
-                        print(plate)
-                        self._send_response(plate)
-                    else: 
-                        print('Plate not found')
-                except Exception as _exp:
-                    print(_exp)
+                plate = self._recognize(frame)
+                if plate:
+                    print(plate)
+                    self._send_response(plate)
+                else: 
+                    print('Plate not found')
             else:
                 print('Camera not read a frame')
