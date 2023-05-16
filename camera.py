@@ -19,7 +19,7 @@ class VideoCamera:
             Thread(target=self.run).start()
     
     def _recognize(self, frame) -> str:
-        result = image_to_string(frame, ['ru'])
+        result = image_to_string(frame, 'rus')
         if result:
             frame_base64 = self._image_to_base64(frame)
             result = self.request_to_yandex_api(frame_base64)
