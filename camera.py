@@ -7,7 +7,7 @@ from PIL import Image
 import base64
 from io import BytesIO
 from services import CarControlService
-
+from pytesseract import image_to_string
 
 class VideoCamera:
     _vision_url = 'https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze'
@@ -19,9 +19,11 @@ class VideoCamera:
             Thread(target=self.run).start()
     
     def _recognize(self, frame) -> str:
-        frame_base64 = self._image_to_base64(frame)
-        result = self.request_to_yandex_api(frame_base64)
-        return self._parse_result(result)
+        result = image_to_string(frame, ['ru'])
+        if result:
+            frame_base64 = self._image_to_base64(frame)
+            result = self.request_to_yandex_api(frame_base64)
+            return self._parse_result(result)
 
     def _parse_result(self, result):
         plates = []
@@ -78,7 +80,7 @@ class VideoCamera:
 
     def run(self):
         while True:
-            time.sleep(3)
+            time.sleep(15)
             ret, frame = self.video.read()
             if ret:
                 plate = self._recognize(frame)
