@@ -20,6 +20,7 @@ class VideoCamera:
     
     def _recognize(self, frame) -> str:
         result = image_to_string(frame, 'rus')
+        print(result)
         if result:
             frame_base64 = self._image_to_base64(frame)
             result = self.request_to_yandex_api(frame_base64)
@@ -68,7 +69,6 @@ class VideoCamera:
     def request_to_yandex_api(self, image_as_base64):
         response = requests.post(self._vision_url, headers=self._get_headers(),
                                 json=self._get_body(image_as_base64))
-        print(response.json())
         return response.json().get('results', [])
 
 
