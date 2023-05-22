@@ -1,7 +1,7 @@
 [
     {
         "id": 1,
-        "plate_response_url": "http://username:password@localhost:9000/api/response-plate/",
+        "plate_response_url": "http://82.146.53.144:48902/api/device",
         "ip": "rtsp://admin:video123@192.168.1.111:554/cam/realmonitor?channel=1&subtype=1",
         "mode" : "import",
         "plate" : "1234"

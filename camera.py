@@ -9,7 +9,7 @@ from PIL import Image
 import base64
 from io import BytesIO
 from services import CarControlService
-from pytesseract import image_to_string
+from pytesseract import image_to_string, pytesseract
 
 
 class VideoCapture:
@@ -63,8 +63,10 @@ class VideoCamera:
             Thread(target=self.run).start()
     
     def _recognize(self, frame) -> str:
-        result = image_to_string(frame, 'rus')
-        print(result)
+        try:
+            result = image_to_string(frame, 'rus')  
+        except pytesseract.TesseractNotFoundError:
+            result = "123"
         if result:
             frame_base64 = self._image_to_base64(frame)
             result = self.request_to_yandex_api(frame_base64)
@@ -79,6 +81,7 @@ class VideoCamera:
                         for l in b.get("lines", []):
                             for w in l.get("words", []):
                                 plates.append(w.get("text"))
+        print(plates)
         return plates
 
     def _image_to_base64(self, image):
@@ -113,6 +116,7 @@ class VideoCamera:
     def request_to_yandex_api(self, image_as_base64):
         response = requests.post(self._vision_url, headers=self._get_headers(),
                                 json=self._get_body(image_as_base64))
+        print(response.json())
         return response.json().get('results', [])
 
 
@@ -127,6 +131,7 @@ class VideoCamera:
             time.sleep(15)
             ret, frame = self.video.read()
             if ret:
+                frame = cv2.resize(frame, (frame.shape[1] // 2, frame.shape[0] // 2))
                 plate = self._recognize(frame)
                 if plate:
                     print(plate)
