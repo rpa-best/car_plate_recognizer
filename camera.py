@@ -87,7 +87,7 @@ class VideoCamera:
             time.sleep(15)
             ret, frame = self.video.read()
             if ret:
-                frame = cv2.resize(frame, (frame[1] // 2, frame[0] // 2))
+                frame = cv2.resize(frame, (frame.shape[1] // 2, frame.shape[0] // 2))
                 plate = self._recognize(frame)
                 if plate:
                     print(plate)
