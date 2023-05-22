@@ -1,4 +1,6 @@
 import time
+import queue
+import sys
 import cv2
 import os
 import requests
@@ -9,13 +11,55 @@ from io import BytesIO
 from services import CarControlService
 from pytesseract import image_to_string
 
+
+class VideoCapture:
+    def __init__(self, cap):
+        self.cap_ip = cap
+        try:
+            cap = int(cap)
+        except ValueError:
+            pass
+        if sys.platform == 'win32':
+            self.cap = cv2.VideoCapture(cap, cv2.CAP_DSHOW)
+        else:
+            self.cap = cv2.VideoCapture(cap)
+        self.q = queue.Queue()
+        self.status = True
+        self.t = Thread(target=self._reader)
+        self.t.daemon = True
+        self.t.start()
+
+    # read frames as soon as they are available, keeping only most recent one
+    def _reader(self):
+        while self.status:
+            try:
+                ret, f = self.cap.read()
+                if not ret:
+                    break
+                if not self.q.empty():
+                    try:
+                        self.q.get_nowait()  # discard previous (unprocessed) frame
+                    except queue.Empty:
+                        pass
+                self.q.put(f)
+            except cv2.error:
+                break
+
+    def read(self):
+        return self.q.get()
+
+    def release(self):
+        self.status = False
+        self.cap.release()
+
+
 class VideoCamera:
     _vision_url = 'https://vision.api.cloud.yandex.net/vision/v1/batchAnalyze'
 
     def __init__(self, params: dict) -> None:
         self.params = params
         if params.get('ip'):
-            self.video = cv2.VideoCapture(params.get('ip'))
+            self.video = VideoCapture(params.get('ip'))
             Thread(target=self.run).start()
     
     def _recognize(self, frame) -> str:
