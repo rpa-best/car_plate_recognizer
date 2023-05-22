@@ -118,7 +118,7 @@ class VideoCamera:
     def request_to_yandex_api(self, image_as_base64):
         response = requests.post(self._vision_url, headers=self._get_headers(),
                                 json=self._get_body(image_as_base64))
-        print(response.json())
+        print("Response Yandex OCR: ", response.json())
         return response.json().get('results', [])
 
 
@@ -132,7 +132,6 @@ class VideoCamera:
         while True:
             ret, frame = self.video.read()
             if ret:
-                frame = cv2.resize(frame, (frame.shape[1] // 2, frame.shape[0] // 2))
                 plate = self._recognize(frame)
                 if plate:
                     print(plate)
