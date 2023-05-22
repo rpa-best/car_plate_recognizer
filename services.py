@@ -9,4 +9,4 @@ class CarControlService:
             camera_params.update(plate=p)
             self.header.update({"Idempotency-Key": str(uuid.uuid4())})
             response = requests.post(camera_params.get('plate_response_url'), json=camera_params, headers=self.header)
-            print("Response Car control: ", response.reason)
+            print("Response Car control: ", response.status_code, response.reason)
