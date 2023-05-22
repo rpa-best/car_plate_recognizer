@@ -46,7 +46,10 @@ class VideoCapture:
                 break
 
     def read(self):
-        return self.q.get()
+        try:
+            return True, self.q.get()
+        except Exception:
+            return False, None
 
     def release(self):
         self.status = False
@@ -128,7 +131,6 @@ class VideoCamera:
 
     def run(self):
         while True:
-            time.sleep(15)
             ret, frame = self.video.read()
             if ret:
                 frame = cv2.resize(frame, (frame.shape[1] // 2, frame.shape[0] // 2))
@@ -140,3 +142,4 @@ class VideoCamera:
                     print('Plate not found')
             else:
                 print('Camera not read a frame')
+            time.sleep(15)
