@@ -84,7 +84,6 @@ class VideoCamera:
                         for l in b.get("lines", []):
                             for w in l.get("words", []):
                                 plates.append(w.get("text"))
-        print(plates)
         return plates
 
     def _image_to_base64(self, image):

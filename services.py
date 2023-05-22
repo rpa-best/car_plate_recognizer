@@ -8,7 +8,5 @@ class CarControlService:
         for p in plate:
             camera_params.update(plate=p)
             self.header.update({"Idempotency-Key": uuid.uuid4()})
-            try:
-                requests.post(camera_params.get('plate_response_url'), json=camera_params, headers=self.header)
-            except requests.exceptions.RequestException:
-                pass
+            response = requests.post(camera_params.get('plate_response_url'), json=camera_params, headers=self.header)
+            print(response.json())
