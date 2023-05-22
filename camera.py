@@ -20,7 +20,6 @@ class VideoCamera:
     
     def _recognize(self, frame) -> str:
         result = image_to_string(frame, 'rus')
-        print(result)
         if result:
             frame_base64 = self._image_to_base64(frame)
             result = self.request_to_yandex_api(frame_base64)
@@ -35,6 +34,7 @@ class VideoCamera:
                         for l in b.get("lines", []):
                             for w in l.get("words", []):
                                 plates.append(w.get("text"))
+        print(plates)
         return plates
 
     def _image_to_base64(self, image):
